@@ -1,0 +1,52 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Output of npm pack
+*.tgz
+
+# Coverage reports
+coverage/
+
+# Temporary files and folders
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+
+# Build files
+dist/
+build/
+
+# Cache folders
+.cache/
+.next/
+
+# Editor and IDE files
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Miscellaneous
+*.bak
+*.backup
+*.pid
+*.pid.lock
