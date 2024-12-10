@@ -87,7 +87,7 @@ const startServer = async () => {
         console.error(`Error starting server: ${err.message}`);
       } else {
         console.log(`Server is running on port ${PORT}`);
-        console.log(`Access it on your LAN at http://192.168.1.12:${PORT}`);
+        console.log(`Access it on your LAN at http://192.168.10.139:${PORT}`);
       }
     });
   } catch (error) {
