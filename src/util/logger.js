@@ -15,11 +15,6 @@ if (process.env.NODE_ENV === "development") {
   logDirectory = "/tmp/logs";
 }
 
-// Ensure log directory exists
-if (!fs.existsSync(logDirectory)) {
-  fs.mkdirSync(logDirectory, { recursive: true });
-}
-
 // Create a daily rotate file transport
 const dailyRotateFileTransport = new DailyRotateFile({
   dirname: logDirectory,
@@ -44,16 +39,13 @@ const logger = winston.createLogger({
   transports: [dailyRotateFileTransport],
 });
 
-// If in development, also log to console
-if (process.env.NODE_ENV === "development") {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      ),
-    })
-  );
-}
+logger.add(
+  new winston.transports.Console({
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.simple()
+    ),
+  })
+);
 
 export default logger;
