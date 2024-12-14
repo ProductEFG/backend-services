@@ -12,7 +12,7 @@ class UserController {
     try {
       this.logger.info("register - Request received", {
         correlationId,
-        username,
+        data: req.body,
       });
       const user = await this.userService.register(req, correlationId);
 
