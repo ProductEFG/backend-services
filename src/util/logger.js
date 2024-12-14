@@ -12,7 +12,12 @@ let logDirectory;
 if (process.env.NODE_ENV === "development") {
   logDirectory = "/app/logs";
 } else {
-  logDirectory = path.join(__dirname, "../../logs");
+  logDirectory = "/tmp/logs";
+}
+
+// Ensure log directory exists
+if (!fs.existsSync(logDirectory)) {
+  fs.mkdirSync(logDirectory, { recursive: true });
 }
 
 // Create a daily rotate file transport

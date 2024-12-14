@@ -22,6 +22,7 @@ import UserWithdrawRoutes from "./src/UserWithdraw/UserWithdrawRoutes.js";
 import TransactionRoutes from "./src/Transaction/TransactionRoutes.js";
 import AdminRoutes from "./src/Admin/AdminRoutes.js";
 import { startCronJobs } from "./src/jobs/userUpdateJobs.js";
+import { moveTmpLogsToPersistent } from "./src/util/loggerUtils.js";
 
 config();
 const app = express();
@@ -80,6 +81,11 @@ const startServer = async () => {
 
     // Start Cron Jobs
     startCronJobs();
+
+    setInterval(() => {
+      console.log("Moving logs from /tmp to persistent storage...");
+      moveTmpLogsToPersistent();
+    }, 60000);
 
     // Start Server
     app.listen(PORT, "0.0.0.0", (err) => {
