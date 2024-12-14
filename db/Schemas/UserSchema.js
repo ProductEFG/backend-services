@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       validate: {
         validator: (v) => {
-          return /^[a-zA-Z\s'-]+$/.test(v);
+          return /^[A-Za-z]+(?: [A-Za-z]+)*$/.test(v);
         },
         message: (props) => `${props.value} is not a valid name!`,
       },
@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       validate: {
         validator: (v) => {
-          return /^[a-zA-Z\s'-]+$/.test(v);
+          return /^[A-Za-z]+(?: [A-Za-z]+)*$/.test(v);
         },
         message: (props) => `${props.value} is not a valid name!`,
       },
@@ -31,8 +31,6 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please enter a username"],
       unique: true,
       trim: true,
-      minlength: [3, "Username must be at least 3 characters long"],
-      maxlength: [20, "Username cannot exceed 20 characters"],
     },
     password: {
       type: String,

@@ -4,14 +4,14 @@ export const userValidation = {
   register: {
     body: Joi.object({
       first_name: Joi.string()
-        .regex(/^[A-Za-z]+$/)
+        .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
         .required()
         .messages({
           "string.pattern.base": "First name must only contain letters.",
           "string.empty": "First name is required.",
         }),
       last_name: Joi.string()
-        .regex(/^[A-Za-z]+$/)
+        .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
         .required()
         .messages({
           "string.pattern.base": "Last name must only contain letters.",
