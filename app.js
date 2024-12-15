@@ -45,7 +45,8 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 
 // Middleware to restrict access
 app.use((req, res, next) => {
-  const clientIP = req.headers["x-forwarded-for"] || req.ip;
+  const forwardedFor = req.headers["x-forwarded-for"];
+  const clientIP = forwardedFor ? forwardedFor.split(",")[0].trim() : req.ip;
   console.log("Client IP:", clientIP);
 
   // If ALLOWED_IPS is *, allow all IPs
