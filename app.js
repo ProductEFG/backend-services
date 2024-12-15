@@ -35,6 +35,7 @@ const allowedIPs = process.env.ALLOWED_IPS
   : [];
 
 // Middleware
+app.set("trust proxy", true);
 app.use(cors());
 app.use(logger("dev"));
 app.use(bodyParser.json());
@@ -44,7 +45,7 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 
 // Middleware to restrict access
 app.use((req, res, next) => {
-  const clientIP = req.ip || req.socket.remoteAddress; // Get client IP
+  const clientIP = req.headers["x-forwarded-for"] || req.ip;
   console.log("Client IP:", clientIP);
 
   // If ALLOWED_IPS is *, allow all IPs
