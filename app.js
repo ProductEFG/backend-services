@@ -29,6 +29,10 @@ const PORT = process.env.PORT || 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+// List of allowed IPs
+const allowedIPs = process.env.ALLOWED_IPS
+  ? process.env.ALLOWED_IPS.split(",")
+  : [];
 
 // Middleware
 app.use(cors());
@@ -37,6 +41,23 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use("/images", express.static(path.join(__dirname, "images")));
+
+// Middleware to restrict access
+app.use((req, res, next) => {
+  const clientIP = req.ip || req.socket.remoteAddress; // Get client IP
+  console.log("Client IP:", clientIP);
+
+  // If ALLOWED_IPS is *, allow all IPs
+  if (allowedIPs.includes("*")) {
+    return next();
+  }
+
+  if (allowedIPs.includes(clientIP)) {
+    next(); // Allow access
+  } else {
+    res.status(403).send("Access forbidden: Your IP is not allowed.");
+  }
+});
 
 // Define the routes
 const userController = container.resolve("userController");
