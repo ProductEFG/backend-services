@@ -1,5 +1,9 @@
 import fs from "fs";
 import path from "path";
+import { v4 as uuidv4 } from "uuid";
+import cloudinary from "../util/cloudinary.js";
+import { Readable } from "stream";
+
 class CompanyService {
   constructor({ companyRepo, stocksHistoryRepo, userStocksRepo, logger }) {
     this.companyRepo = companyRepo;
@@ -86,10 +90,31 @@ class CompanyService {
         ...data,
       };
 
-      if (logoPath) {
-        const logoFileName = path.basename(logoPath.path);
-        addData.logo = logoFileName;
-      }
+      let filePathOnCloudinary = `${uuidv4()}_${
+        logoPath.originalname.split(".")[0]
+      }`;
+
+      await cloudinary.v2.uploader
+        .upload(logoPath.path, {
+          folder: "company_logos",
+          public_id: filePathOnCloudinary,
+        })
+        .then((result) => {
+          // Remove file from local uploads folder
+          if (fs.existsSync(logoPath.path)) {
+            fs.unlinkSync(logoPath.path);
+          }
+          console.log("Logo uploaded successfully:", result.secure_url);
+          addData.logo = result.secure_url;
+        })
+        .catch((error) => {
+          // Remove file from local uploads folder
+          if (fs.existsSync(logoPath.path)) {
+            fs.unlinkSync(logoPath.path);
+          }
+          console.error("Error uploading logo to Cloudinary:", error);
+          reject(new Error("Failed to upload logo"));
+        });
 
       const company = await this.companyRepo.addCompany(addData, correlationId);
 
@@ -103,12 +128,13 @@ class CompanyService {
     try {
       const existingCompany = await this.companyRepo.getCompany(companyId);
 
-      if (existingCompany.logo) {
-        const oldLogoPath = path.resolve("images/logos", existingCompany.logo);
-        if (fs.existsSync(oldLogoPath)) {
-          fs.unlinkSync(oldLogoPath);
-          this.logger.debug(`Deleted previous logo: ${existingCompany.logo}`);
-        }
+      const publicId = existingCompany.logo
+        .split("/")
+        .slice(7)
+        .join("/")
+        .replace(".svg", "");
+      if (publicId) {
+        await cloudinary.v2.uploader.destroy(publicId, { invalidate: true });
       }
 
       await this.stocksHistoryRepo.deleteStocksHistory(
@@ -139,18 +165,39 @@ class CompanyService {
       const existingCompany = await this.companyRepo.getCompany(data.companyId);
 
       if (logoPath) {
-        const logoFileName = path.basename(logoPath.path);
-        updateData.logo = logoFileName;
+        let filePathOnCloudinary = `${uuidv4()}_${
+          logoPath.originalname.split(".")[0]
+        }`;
 
-        if (existingCompany.logo) {
-          const oldLogoPath = path.resolve(
-            "images/logos",
-            existingCompany.logo
-          );
-          if (fs.existsSync(oldLogoPath)) {
-            fs.unlinkSync(oldLogoPath);
-            console.log(`Deleted previous logo: ${existingCompany.logo}`);
-          }
+        await cloudinary.v2.uploader
+          .upload(logoPath.path, {
+            folder: "company_logos",
+            public_id: filePathOnCloudinary,
+          })
+          .then((result) => {
+            // Remove file from local uploads folder
+            if (fs.existsSync(logoPath.path)) {
+              fs.unlinkSync(logoPath.path);
+            }
+            console.log("Logo uploaded successfully:", result.secure_url);
+            updateData.logo = result.secure_url;
+          })
+          .catch((error) => {
+            // Remove file from local uploads folder
+            if (fs.existsSync(logoPath.path)) {
+              fs.unlinkSync(logoPath.path);
+            }
+            console.error("Error uploading logo to Cloudinary:", error);
+            reject(new Error("Failed to upload logo"));
+          });
+
+        const publicId = existingCompany.logo
+          .split("/")
+          .slice(7)
+          .join("/")
+          .replace(".svg", "");
+        if (publicId) {
+          await cloudinary.v2.uploader.destroy(publicId, { invalidate: true });
         }
       }
 
@@ -201,37 +248,40 @@ class CompanyService {
               companyId: existingCompany._id,
               date: new Date(),
               visitors: prevVisitors,
-              shares_price: prevPrice,
               shares_return: prevReturn,
+              shares_price: prevPrice,
               number_of_buys: prevBuys,
               number_of_sells: prevSells,
             },
             correlationId
           );
 
-          // Perform calculations for the current record
-          const currentPrice = currentVisitors / 100;
-          const currentChange = currentPrice - prevPrice;
-          const currentReturn = prevPrice
-            ? ((currentPrice - prevPrice) / prevPrice) * 100
-            : 0; // Avoid division by zero
+          if (currentVisitors > 0) {
+            // Perform calculations for the current record
+            const currentPrice = currentVisitors / 100;
+            const currentChange = currentPrice - prevPrice;
+            const currentReturn =
+              prevPrice > 0
+                ? ((currentPrice - prevPrice) / prevPrice) * 100
+                : 0;
 
-          // Prepare bulk operation for updating the company collection
-          bulkOperations.push({
-            updateOne: {
-              filter: { establishment_type: establishment }, // Match the establishment in the database
-              update: {
-                $set: {
-                  current_price: parseFloat(currentPrice.toFixed(2)),
-                  current_change: currentChange,
-                  current_visitors: currentVisitors,
-                  current_return: parseFloat(currentReturn.toFixed(2)), // Ensure numeric value with 2 decimals
-                  last_updated: new Date(), // Add a timestamp for updates
+            // Prepare bulk operation for updating the company collection
+            bulkOperations.push({
+              updateOne: {
+                filter: { establishment_type: establishment }, // Match the establishment in the database
+                update: {
+                  $set: {
+                    current_price: parseFloat(currentPrice.toFixed(2)),
+                    current_change: currentChange,
+                    current_visitors: currentVisitors,
+                    current_return: parseFloat(currentReturn.toFixed(2)), // Ensure numeric value with 2 decimals
+                    last_updated: new Date(), // Add a timestamp for updates
+                  },
                 },
+                upsert: false, // Don't create the record if it doesn't exist
               },
-              upsert: false, // Don't create the record if it doesn't exist
-            },
-          });
+            });
+          }
 
           this.logger.debug("Prepared bulk operation for establishment", {
             establishment,

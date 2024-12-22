@@ -5,7 +5,7 @@ import UserProfit from "../../db/Schemas/UserProfitSchema.js";
 import logger from "../util/logger.js";
 
 // Monthly Task: Update previousBalance
-const updateMonthlyBalances = async () => {
+export const updateMonthlyBalances = async () => {
   logger.info("running Monthly user balance update job", {
     date: new Date(),
   });
@@ -37,7 +37,7 @@ const updateMonthlyBalances = async () => {
 };
 
 // Daily Task: Update stock balances
-const updateDailyStockBalances = async () => {
+export const updateDailyStockBalances = async () => {
   logger.info("running Daily user Stocks update job", {
     date: new Date(),
   });
@@ -86,12 +86,12 @@ const updateDailyStockBalances = async () => {
 };
 
 // Define cron jobs
-export const startCronJobs = () => {
-  // Run the monthly task on the 1st of every month at midnight
-  cron.schedule("0 0 1 * *", updateMonthlyBalances);
+// export const startCronJobs = () => {
+//   // Run the monthly task on the 1st of every month at midnight
+//   cron.schedule("0 0 1 * *", updateMonthlyBalances);
 
-  // Run the daily task every day at midnight
-  cron.schedule("0 0 * * *", updateDailyStockBalances);
+//   // Run the daily task every day at midnight
+//   cron.schedule("0 0 * * *", updateDailyStockBalances);
 
-  console.log("Cron jobs initialized.");
-};
+//   console.log("Cron jobs initialized.");
+// };

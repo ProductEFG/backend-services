@@ -9,6 +9,7 @@ class StocksHistoryController {
     const correlationId = uuidv4();
     try {
       const { companyId } = req.params;
+      const { numberOfDays } = req.query;
 
       this.logger.info("getStocksHistory - Request received", {
         companyId,
@@ -17,6 +18,7 @@ class StocksHistoryController {
 
       const history = await this.stocksHistoryService.getStocksHistory(
         companyId,
+        numberOfDays,
         correlationId
       );
 

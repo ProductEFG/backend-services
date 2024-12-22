@@ -4,10 +4,11 @@ class StocksHistoryService {
     this.logger = logger;
   }
 
-  getStocksHistory = async (companyId, correlationId) => {
+  getStocksHistory = async (companyId, numberOfDays, correlationId) => {
     try {
       const history = await this.stocksHistoryRepo.getStocksHistory(
         companyId,
+        numberOfDays,
         correlationId
       );
 

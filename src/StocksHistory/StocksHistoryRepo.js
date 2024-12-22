@@ -12,21 +12,26 @@ class StocksHistoryRepo {
     });
 
     try {
-      // Normalize the `data.date` to only consider the date portion
       const normalizedDate = new Date(data.date);
       normalizedDate.setHours(0, 0, 0, 0);
       data.date = normalizedDate;
 
-      // Use findOneAndUpdate to either update or insert the record
       const stockHistory = await StockHistory.findOneAndUpdate(
         {
           companyId: data.companyId,
-          date: normalizedDate, // Match by normalized date and companyId
+          date: normalizedDate,
         },
-        { $set: data }, // Update the record with the provided data
-        { upsert: true, new: true } // Create if not found, and return the updated/new document
+        { $set: data },
+        { upsert: true, new: true }
       );
 
+      this.logger.debug(
+        "addStocksHistory - Added the following stock history",
+        {
+          correlationId,
+          stockHistory,
+        }
+      );
       return stockHistory;
     } catch (error) {
       this.logger.error("Error in addStocksHistory", {
@@ -66,12 +71,25 @@ class StocksHistoryRepo {
     }
   };
 
-  getStocksHistory = async (companyId, correlationId) => {
+  getStocksHistory = async (companyId, numberOfDays, correlationId) => {
     this.logger.info("getStocksHistory - Fetching history for company", {
       correlationId,
       companyId,
+      numberOfDays,
     });
-    const stocksHistory = await StockHistory.find({ companyId: companyId });
+
+    const days = parseInt(numberOfDays, 10);
+    const query = { companyId: companyId };
+
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() - days);
+
+    query.createdAt = { $gte: targetDate };
+
+    const stocksHistory = await StockHistory.find(query)
+      .sort({ createdAt: -1 })
+      .limit(days || 0);
+
     return stocksHistory;
   };
 

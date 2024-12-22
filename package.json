@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@replit/object-storage": "^1.0.0",
     "awilix": "^12.0.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
@@ -34,7 +35,8 @@
     "serve-favicon": "^2.5.0",
     "validator": "^13.12.0",
     "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "eslint": "^9.12.0",

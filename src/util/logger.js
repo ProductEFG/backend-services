@@ -2,6 +2,8 @@ import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 import { fileURLToPath } from "url";
 import path from "path";
+import { config } from "dotenv";
+config();
 
 // Define log directory
 const __filename = fileURLToPath(import.meta.url);
@@ -10,7 +12,7 @@ const __dirname = path.dirname(__filename);
 let logDirectory;
 // If in production, the application will be in docker so use an absolute path
 if (process.env.NODE_ENV === "development") {
-  logDirectory = "/app/logs";
+  logDirectory = `${__dirname}/../../Logs`;
 } else {
   logDirectory = "/tmp/logs";
 }

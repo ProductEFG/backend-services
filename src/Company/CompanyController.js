@@ -1,4 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
+import {
+  updateDailyStockBalances,
+  updateMonthlyBalances,
+} from "../jobs/userUpdateJobs.js";
 
 class CompanyController {
   constructor({ companyService, logger }) {
@@ -364,6 +368,30 @@ class CompanyController {
       });
 
       await this.companyService.updateVisitors(req.body, correlationId);
+
+      await updateDailyStockBalances();
+
+      const currentDate = new Date();
+      const tomorrow = new Date(currentDate);
+      tomorrow.setDate(currentDate.getDate() + 1);
+
+      if (tomorrow.getDate() === 1) {
+        this.logger.info(
+          "updateVisitors - Tomorrow is the start of a new month => Updating prevBalance",
+          {
+            correlationId,
+          }
+        );
+
+        await updateMonthlyBalances();
+      } else {
+        this.logger.info(
+          "updateVisitors - Tomorrow is not the start of a new month => Not updating prevBalance",
+          {
+            correlationId,
+          }
+        );
+      }
 
       this.logger.info("updateVisitors - Successfully updated companies", {
         correlationId,
