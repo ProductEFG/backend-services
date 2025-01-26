@@ -28,7 +28,7 @@ class UserWithdrawService {
         correlationId
       );
 
-      if (existingUser.wallet_balance < withdraw_amount) {
+      if (Math.ceil(existingUser.wallet_balance) < withdraw_amount) {
         throw new Error("Not enough funds to complete transaction");
       }
 
@@ -42,6 +42,10 @@ class UserWithdrawService {
 
       const opening_balance = existingUser.wallet_balance;
       const closing_balance = existingUser.wallet_balance - withdraw_amount;
+
+      if (closing_balance < 0) {
+        closing_balance = 0;
+      }
 
       await this.userWithdrawRepo.addUserWithdraw(
         { ...data, opening_balance, closing_balance },
