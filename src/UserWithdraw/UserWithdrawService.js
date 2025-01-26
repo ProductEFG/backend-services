@@ -41,7 +41,7 @@ class UserWithdrawService {
       );
 
       const opening_balance = existingUser.wallet_balance;
-      const closing_balance = existingUser.wallet_balance - withdraw_amount;
+      let closing_balance = existingUser.wallet_balance - withdraw_amount;
 
       if (closing_balance < 0) {
         closing_balance = 0;
