@@ -119,7 +119,10 @@ class UserRepo {
 
       const user = await User.findById(userId);
 
-      user.wallet_balance -= withdraw_amount;
+      user.wallet_balance =
+        user.wallet_balance - withdraw_amount < 0
+          ? 0
+          : user.wallet_balance - withdraw_amount;
 
       await user.save();
 
