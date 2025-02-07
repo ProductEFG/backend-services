@@ -73,7 +73,14 @@ class UserRepo {
     }
   }
 
-  async updateAfterTransaction(type, total, userId, profit, correlationId) {
+  async updateAfterTransaction(
+    type,
+    total,
+    userId,
+    profit,
+    temp_price,
+    correlationId
+  ) {
     try {
       this.logger.info("Updating user after transaction", {
         correlationId,
@@ -87,7 +94,7 @@ class UserRepo {
 
       if (type === "Buy") {
         user.wallet_balance -= total;
-        user.stock_balance += total;
+        user.stock_balance += temp_price;
         user.number_of_assets += 1;
         user.total_invested_amount += total;
       } else if (type === "Sell") {

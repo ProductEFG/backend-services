@@ -29,6 +29,11 @@ const companySchema = mongoose.Schema(
       required: [true, "Every company must have a stock price"],
       default: 0,
     },
+    temp_price: {
+      type: Number,
+      required: [true, "Every company must have a temporary price"],
+      default: 0,
+    },
     current_change: {
       type: Number,
       required: true,

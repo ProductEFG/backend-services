@@ -37,6 +37,7 @@ class UserStocksService {
       if (!existingCompany) throw new Error("this company doesn't exist");
 
       const totalBuyPrice = quantity * buy_price;
+      const totalTempPrice = quantity * existingCompany.temp_price;
       if (totalBuyPrice > existingUser.wallet_balance) {
         throw new Error(
           "this user doesn't have enough wallet balance to buy this stock"
@@ -88,6 +89,7 @@ class UserStocksService {
         totalBuyPrice,
         userId,
         0,
+        totalTempPrice,
         correlationId
       );
       userAdjusted = true;
@@ -196,12 +198,30 @@ class UserStocksService {
       if (!existingUserStocks || existingUserStocks.length === 0)
         throw new Error("User has no shares in this company");
 
+      let sell_price = 0;
       // Determine stocks to delete or adjust
       for (const stock of existingUserStocks) {
         if (totalShares + stock.quantity <= quantity) {
           totalShares += stock.quantity;
           buy_price += stock.buy_price * stock.quantity;
           deletedUserStocks.push(stock._id);
+
+          this.logger.debug(
+            `the result of date comparison is: ${
+              new Date(stock.createdAt).toDateString() ===
+              new Date().toDateString()
+            } for quantity: ${totalShares}`,
+            { correlationId }
+          );
+
+          if (
+            new Date(stock.createdAt).toDateString() ===
+            new Date().toDateString()
+          ) {
+            sell_price += existingCompany.temp_price * stock.quantity;
+          } else {
+            sell_price += existingCompany.current_price * stock.quantity;
+          }
         } else if (totalShares !== quantity) {
           const remainder = quantity - totalShares;
           totalShares += remainder;
@@ -210,6 +230,16 @@ class UserStocksService {
             _id: stock._id,
             quantity: stock.quantity - remainder,
           };
+
+          if (
+            new Date(stock.createdAt).toDateString() ===
+            new Date().toDateString()
+          ) {
+            sell_price += existingCompany.temp_price * remainder;
+          } else {
+            sell_price += existingCompany.current_price * remainder;
+          }
+
           break;
         }
       }
@@ -217,7 +247,6 @@ class UserStocksService {
       if (totalShares < quantity)
         throw new Error("User does not have enough shares to sell");
 
-      const sell_price = quantity * existingCompany.current_price;
       const profit = sell_price - buy_price;
 
       // Record sell transaction

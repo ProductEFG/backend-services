@@ -260,6 +260,10 @@ class CompanyService {
             // Perform calculations for the current record
             const currentPrice = currentVisitors / 100;
             const currentChange = currentPrice - prevPrice;
+            const currentTemp =
+              currentPrice + currentChange < 0
+                ? 0
+                : currentPrice + currentChange;
             const currentReturn =
               prevPrice > 0
                 ? ((currentPrice - prevPrice) / prevPrice) * 100
@@ -274,6 +278,7 @@ class CompanyService {
                     current_price: parseFloat(currentPrice.toFixed(2)),
                     current_change: currentChange,
                     current_visitors: currentVisitors,
+                    temp_price: currentTemp,
                     current_return: parseFloat(currentReturn.toFixed(2)), // Ensure numeric value with 2 decimals
                     last_updated: new Date(), // Add a timestamp for updates
                   },
