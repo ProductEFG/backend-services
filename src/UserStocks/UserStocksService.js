@@ -335,7 +335,18 @@ class UserStocksService {
       this.logger.info(`Completed sellStock process for userId=${userId}`, {
         correlationId,
       });
-      return updatedUser;
+
+      const transactionDetails = {
+        sold_quantity: quantity,
+        buy_price,
+        sell_price,
+        profit,
+      };
+
+      return {
+        updatedUser,
+        transactionDetails,
+      };
     } catch (error) {
       this.logger.error(
         `Error in sellStock: userId=${userId}, companyId=${companyId}, error=${error.message}`,
