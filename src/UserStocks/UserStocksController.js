@@ -35,12 +35,12 @@ class UserStocksController {
       body: req.body,
     });
     try {
-      const updatedUser = await this.userStocksService.sellStock(
+      const data = await this.userStocksService.sellStock(
         req.body,
         correlationId
       );
-      this.logger.info("sellStock - Success", { correlationId, updatedUser });
-      res.status(201).json(updatedUser);
+      this.logger.info("sellStock - Success", { correlationId, data });
+      res.status(201).json(data);
     } catch (error) {
       this.logger.error("sellStock - Error occurred", {
         correlationId,
